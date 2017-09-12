@@ -1,0 +1,40 @@
+#
+# Created by 程勇 on 2017/9/12.
+#开发工具是pycharm+python3.5，如果是用的python2，注意将print（）括号去掉，改为print。
+#几种查找的python实现，所有函数调用API一样，输入你要在哪一堆数据content中查找一个目标target，如果有，会返回要查找的目标在content的具体位置，
+ content用列表实现，如果没有该目标，则返回false。
+#
+def LinerSearch(content, target):  # 线性搜索
+    n = len(content)
+    for index in range(n):
+        if content[index] == target:
+            return index           # 返回待查找元素所在位置
+    return False
+
+def SortedLinerSearch(content, target):  # 有序的线性序列查找
+    n = len(content)
+    for index in range(n):
+        if content[index] == target:
+            return index
+        elif content[index] > target:
+            return False
+    return False
+
+def BinarySearch(content, target):  # 二分查找
+    low = 0
+    high = len(content) - 1
+    while low <= high:
+        mid = (low + high) // 2  # 相当于int((low+high)/2)
+        if content[mid] == target:
+            return mid
+        elif target > content[mid]:
+            low = mid + 1
+        else:
+            high = mid - 1
+    return False
+#三种查找方式的调用
+content = [1, 3, 2, 5, 7, 8, 10, 32]
+target = 2
+print(LinerSearch(content, target))
+print(SortedLinerSearch(content, target))
+print(BinarySearch(content, target))
