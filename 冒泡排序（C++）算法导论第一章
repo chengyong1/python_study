@@ -1,0 +1,42 @@
+//
+// Created by 程勇 on 2017/9/12.
+//算法导论第一章————冒泡排序
+//
+#include <iostream>
+#include <cstdlib>
+using namespace std;
+/*冒泡排序算法*/
+int bubbleSort(int *List, int n)
+{
+    int temp;      // 定义一个中间变量，方便两个数的交换，毕竟C++不支持a, b = b, a这种操作
+    for (int i = 0; i < n; ++i) {
+        for (int j = 0; j < n - i; ++j) {
+            if(List[j] > List[j+1])
+            {
+                temp = List[j];
+                List[j] = List[j+1];
+                List[j+1] = temp;
+            }
+        }
+    }
+    cout << endl;
+    cout << "The list after sort:  ";
+    for (int k = 0; k < n; ++k) {
+        cout << List[k] << "  ";
+    }
+    return 0;
+}
+/*主函数调用*/
+int main()
+{
+    int n;
+    cout << "Please enter the len of the List you want to sort: " << endl;
+    cin >> n;
+    int List[n];
+    cout << "The list before sort:  ";
+    for (int i = 0; i < n; ++i) {
+        List[i] = rand()%100;   // 用的随机函数，表示产生n个从0到99的随机整数
+        cout << List[i] << "  ";
+    }
+    bubbleSort(List, n);
+}
