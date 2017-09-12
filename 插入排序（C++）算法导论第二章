@@ -1,0 +1,40 @@
+//
+// Created by 程勇 on 2017/9/12.
+//算法导论第二章————插入排序
+//
+#include <iostream>
+#include <cstdlib>
+using namespace std;
+int insertSort(int *List, int n)
+{
+    int i, key;
+    for (int j = 1; j < n -1; ++j) {
+        key = List[j];
+        i = j -1;
+        while (i >= 0 && List[i] > key)
+        {
+            List[i+1] = List[i];
+            i = i - 1;
+        }
+        List[i+1] = key;
+    }
+    cout << endl;
+    cout << "The list after sort:  ";
+    for (int k = 0; k < n; ++k) {
+        cout << List[k] << "  ";
+    }
+    return 0;
+}
+int main()
+{
+    int n;
+    cout << "Please enter the len of the List you want to sort: " << endl;
+    cin >> n;
+    int List[n];
+    cout << "The list before sort:  ";
+    for (int i = 0; i < n; ++i) {
+        List[i] = rand()%100;
+        cout << List[i] << "  ";
+    }
+    insertSort(List, n);
+}
