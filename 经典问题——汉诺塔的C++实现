@@ -1,0 +1,48 @@
+//
+// Created by 程勇 on 2017/9/12.
+//汉诺塔（hanoi tower）的C++程序
+//三根柱子A，B，C，有n个圆圈套在A上，且从上到下圆圈依次增大，要将其也按照从上到下依次增大的原则移动至C，一次只能移动一个，B可以作为跳板使用
+//
+#include <iostream>
+using namespace std;
+/*下面这个函数用来显示circle在A，B，C具体的移动步骤*/
+void hanoi(int n, char A, char B, char C)
+{
+    if(n==1)
+    {
+        cout << "move circle " << n << " from " << A << " to " << C << endl; //剩下的一个圆圈就直接从A移到C
+    }
+    else
+    {
+        hanoi(n-1, A, C, B); //先将A柱上的n-1个园圈经过C为跳板由A-->B
+        cout << "move circle " << n << " from " << A << " to " << C << endl;
+        hanoi(n-1, B, A, C); //再将B柱上的n-1个圆圈经过A为跳板转移到C上
+    }
+}
+
+/*下面这个函数用来计算需要移动多少次才能达成目标*/
+int value(int n)
+{
+    int f;   //f用来保存要移动多少步
+    if(n==1)
+    {
+        return 1;  //用来结束递归
+    }
+    else
+    {
+        f = 2 * value(n - 1) + 1;
+    }
+    return f;
+}
+
+/*主函数*/
+int main()
+{
+    int n, f;
+    cout << "please enter the number of circle:   " << endl;
+    cin >> n;
+    hanoi(n, 'A', 'B', 'C');
+    f = value(n);
+    cout << "need to move " << f << " steps" << endl;
+    return 0;
+}
