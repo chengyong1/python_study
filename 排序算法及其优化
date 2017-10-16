@@ -1,0 +1,318 @@
+排序算法及其优化
+作者：程勇
+写在前面：1、所有的程序用C++完成。
+          2、一个完整的排序程序由一个排序函数加上一个主函数构成，例如：void bubbleSort(int arr[], int n) ，这些函数的输入都是数组arr和数组长度n。
+          3、主函数里面生成随机数，测试排序时间等函数都是调用头文件里面的，头文件是sortTest.h，内含许多函数。
+          4、部分函数及其注释：
+函数结构	所在库	功能
+Srand()	Cstdlib(在c中是stdlib.h)	产生随机数种子
+Rand()%(MAX)	cstdlib	产生0~MAX-1的随机整数
+Assert()	cassert	若括号里面为假，则不再执行后续操作
+Clock()	ctime	计算时钟数
+            5、头文件里面内容：
+#define SORT_SORTTEST_H
+#include <cstdlib>
+#include <ctime>
+#include <iostream>
+#include <cassert>
+using namespace std;
+namespace sortTest   
+{
+    /*生成随机数组*/
+    int *getRandomArray(int n, int rangeL, int rangeR) //生成n个元素的随机数组，每个元素的随机取值范围是[rangeL,rangeR]
+    {
+        assert(rangeL <= rangeR);
+        int *arr = new int[n];
+        srand(time(NULL)); //产生随机数种子
+        for (int i = 0; i < n; ++i) {
+            arr[i] = rand() % (rangeR - rangeL + 1) + rangeL;
+        }
+        return arr;
+    }
+    /*生成近似排序的随机数组，就是先生成一个完全排序的数组，然后交换其中swapimes个元素的位置*/
+    int *getNearlyOrderedArray(int n, int swapTimes)
+    {
+        int *arr = new int[n];
+        for (int i = 0; i < n; i ++) {
+            arr[i] = i;
+        }
+        srand(time(NULL));
+        for (int j = 0; j < swapTimes; j ++) {
+            int posX = rand()%n;
+            int posY = rand()%n;
+            swap(arr[posX], arr[posY]);
+        }
+        return arr;
+    }
+    /*下面这个函数用来打印数组*/
+    void printArray(int arr[], int n)
+    {
+        for (int i = 0; i < n; ++i) {
+            cout << arr[i] << " ";
+        }
+        cout << endl;
+        return;
+    }
+    /*以下是测试排序所花费的时间*/
+    void testSort(string sortName, void(*sort)(int [], int), int arr[], int n)
+    {
+        clock_t startTime = clock();
+        sort(arr, n);
+        clock_t endTime = clock();
+        //assert(isSorted(arr, n));  //作用是如果它的条件返回错误，则终止程序执行
+        cout << sortName << " : " << double(endTime - startTime) / CLOCKS_PER_SEC << " s." << endl;
+        return;
+    }
+}
+      6、主函数内容：
+
+int main()
+{
+    int n = 100;//随机数组里面的数据量
+    int *arr = sortTest::getRandomArray(n, 0, 100); //调用头文件里面sortTest命名空间里面的函数，该函数可产生n个[10,100]间的随机整数
+    selectionSort(arr, n);
+    sortTest::printArray(arr, n);  //调用头文件里面sortTest命名空间里面的printArray函数，该函数可以打印任何类型
+    sortTest::testSort("selectionSort", selectionSort, arr, n);
+    delete[] arr;//释放内存
+}
+关于主函数的解释：一般测试一个排序算法是否正确的时候可以调用主函数里面标红的两句，先排序再打印出来，一看便知；在保证算法正确执行的前提下，可以调用浅蓝色那句，测试排序时间。注意我在头文件里面开辟了一个空间sortTest(using nameplace sortTest),调用里面的函数直接用   sortTset::函数名   即可。
+       7、一个排序程序的完整呈现：
+#include <iostream>
+#include "sortTest.h"
+using namespace std;
+
+void bubbleSort(int arr[], int n)
+    {
+        for (int i = 0; i < n; i ++ )
+        {
+            for (int j = 0; j < n - i; j ++ )
+            {
+                if (arr[j] > arr[j+1])
+                    swap(arr[j], arr[j+1]);
+            }
+        }
+    }
+
+int main()
+{
+    int n = 10000;
+    int *arr = sortTest::getRandomArray(n, 0, n);
+    bubbleSort(arr, n);
+    sortTest::printArray(arr, n);
+    sortTest::testSort("bubbleSort", bubbleSort, arr, n);
+    delete[] arr;
+}
+一、O(n^2)级别的排序算法
+1、	冒泡排序：最老的排序算法，速度很慢，用得很少
+void bubbleSort(int arr[], int n)
+    {
+        for (int i = 0; i < n; i ++ )
+        {
+            for (int j = 0; j < n - i; j ++ )
+            {
+                if (arr[j] > arr[j+1])
+                    swap(arr[j], arr[j+1]);
+            }
+        }
+    }
+
+2、	选择排序：先把序列中最小的和第一个元素的地址进行交换，接下来找到……
+void selectionSort(int arr[], int n)
+{
+    for (int i = 0; i < n; i ++) {
+        //寻找[i,n]区间里面的最小值
+        int minIndex = i;
+        for (int j = i + 1; j < n; j ++) {
+            if (arr[j] < arr[minIndex])
+                minIndex = j;           //这就找到了[i,n]区间里面的最小值的位置j，并把它存在了minIndex中
+            swap(arr[i], arr[minIndex]);//把最小值的位置和arr[i]交换
+        }
+    }
+}
+
+3、	插入排序：依次把第i个元素与其前一个元素作比较，决定交不交换
+void insertionSort(int arr[], int n)
+{
+    for (int i = 1; i < n; i ++) {
+        //寻找元素arr[i]合适的插入位置
+        for (int j = i; j > 0 && arr[j] < arr[j-1]; j --) //同时满足j>0和arr[j] < arr[j-1]才进行下一步操作，这样的话理论上会比选择排序花的时间更少
+        {
+                swap(arr[j], arr[j-1]);
+        }
+    }
+}
+
+插入排序加强版：无需交换两个元素，速度更快，且可以提前终止内层循环。对于近似线性的数组，速度快得飞起，复杂度会接近于O(n)，所以插入排序在某些情况下速度比O(nlogn)级别的还要快。
+void insertionSort(int arr[], int n)
+{
+    for (int i = 1; i < n; i ++) {
+        //寻找元素arr[i]合适的插入位置
+        T element = arr[i];
+        int j; //j保存元素e应该插入的位置
+        for (j = i; j > 0 && arr[j-1] > element; j --) //只有前一个元素的值大于后一个元素时才执行for循环
+        {
+            arr[j] = arr[j-1];  //无需交换，速度更快，一次交换所花的时间约等于三次赋值
+        }
+        arr[j] = element;
+    }
+}
+4、	希尔排序：在加强版插入排序上继续升级，待排序列有n个元素，先取一个小于n的整数h1作为第一个增量，把待排序列以间隔h1分成若干子序列，子序列内使用插入排序；然后取第二个增量h2(< h1)，重复上述的划分和排序，直至所取的增量hl = 1 (h1 > h2 > ... > hl)。
+时间复杂度不定，随长度变化，但比O(n^2)小很多。
+void shellSort(int arr[], int n)
+{
+    int d = n / 2;  //增量保存在d中
+    while (d >= 1)
+    {
+        for (int i = d; i < n; i ++ )
+        {
+            int j = i - d;
+            int element = arr[i];
+            while (j >= 0 && element < arr[j])
+            {
+                arr[j+d] = arr[j];
+                j = j - d;
+            }
+            arr[j+d] = element;
+        }
+        d = d / 2;
+    }
+}
+二、O(nlogn)级别的排序算法
+1、	归并排序：不停地进行分组排序，最后再归并，跟DSP里面的快速傅里叶算法一样
+/*将有序序列arr[l-->mid]和arr[mid+1-->r]两部分归并在一起*/
+void __merge(int arr[], int l, int mid, int r)
+{
+    int aux[r-l+1];//分配一个跟arr相同大小的辅助空间
+    //以下四行将arr里面的值复制到aux里面去
+    for (int i = l; i <= r ; i ++ )
+    {
+        aux[i-l] = arr[i];
+    }
+    //开始对两个数组arr[l-->mid]和arr[mid+1-->r]进行归并
+    //设置三个索引i，j，k，分别对应分成的两个数组的起始位置和辅助空间aux的其实位置
+    int i = l, j = mid+1;
+    for (int k = l; k <= r ; k ++ )
+    {
+        //只有确认两个子数组索引还没有越界的情况下才能进行下一步操作
+        if(i > mid)
+        {
+            arr[k] = aux[j-l];
+            j++;
+        }
+        else if(j > r)
+        {
+            arr[k] = aux[i-l];
+            i++;
+        }
+        else if (aux[i-l] < aux[j-l])
+        {
+            arr[k] = aux[i-l];
+            i++;
+        }
+        else
+        {
+            arr[k] = aux[j-l];
+            j++;
+        }
+    }
+}
+/*使用递归进行归并排序，对arr[l-->r]进行排序*/
+void __mergeSort(int arr[], int l, int r)
+{
+    if (l >= r)  //处理递归到底的情况
+        return;
+    int mid = (l+r)/2; //找个中间变量mid把arr分成两部分
+    //以下两行分别对arr左右两边进行递归排序
+    __mergeSort(arr, l, mid);
+    __mergeSort(arr, mid+1, r);
+    __merge(arr, l, mid, r);//将排好序的左右两个序列按大小顺序重新归并在一起
+}
+void mergeSort(int arr[], int n)
+{
+    __mergeSort(arr, 0, n-1);
+}
+
+自底向上的进行归并排序
+void mergeSortBtU(int arr[], int n)
+{
+    //size,2size,4size依次网上递增，直到达到整个序列长度n
+    for (int size = 1; size <= n ; size+=size )
+    {
+        for (int i = 0; i + size < n; i = i+size+size)//i + size < n防止越界
+        {
+            //分别对arr[i-->i+size-1],arr[i+size-->i+2size-1]进行归并排序
+            __merge(arr, i, i+size-1,min(i+size+size-1,n-1));//min(i+size+size-1,n-1)防止越界
+        }
+    }
+}
+
+2、快速排序：把数组第一个元素作为分成两个子数组的标致点，把数组的起始位置定义为l；左边的子数组里面的值都小于这个数，右边的一部分大于这个数，这个左右的分界点我们定义为j；直到发现右边某个数比这个元素小，这个分界点我们定义为i。
+/*返回p，使得arr[l-->p-1]<arr[p],arr[p+1-->r]>arr[p]*/
+int __partition(int arr[], int l, int r)
+{
+    //优化2：随机找一个数作为起始标准，因为有可能序列本身就是一个近似线性的，这样的话快速排序的时间复杂度可能退化到O(n^2)
+    //swap(arr[l], arr[rand()%(r-l+1)+l]);
+    int v = arr[l];
+    //arr[l+1-->j)<v,arr[j+1-->i)>v
+    int j = l;
+    for (int i = l+1; i <= r ; i ++ )
+    {
+        if(arr[i] < v)
+        {
+            swap(arr[j + 1], arr[i]);
+            j++;
+        }
+    }
+    swap(arr[l], arr[j]);
+    return j;
+}
+/*优化3：如果有大量重复元素*/
+int __partition2(int arr[], int l, int r)
+{
+    swap(arr[l], arr[rand()%(r-l+1)+l]);
+    int v = arr[l];
+    //arr[l+1-->j)<=v,arr[j+1-->i)>=v
+    int i = l+1, j = r;
+    while (true)
+    {
+        while(arr[i] < v && i <= r)
+            i++;
+        while (arr[j] > v && j >= l+1)
+            j--;
+        if(i > j)
+            break;
+        swap(arr[i], arr[j]);
+        i++;
+        j--;
+    }
+    swap(arr[l], arr[j]);
+    return j;
+
+}
+/*优化4：三路快速排序*/
+int __partition3(int arr[], int l, int r)
+{
+
+}
+
+/*对arr[l-->r]部分进行快速排序*/
+void __quickSort(int arr[], int l, int r)
+{
+    if (l >= r)
+        return;
+    //优化1:当长度很小时变化为插入排序
+    //if(l-r <= 15)
+    //{
+    //    insertionSort(arr, l, r);
+    //    return;
+    //}
+    int p = __partition2(arr, l, r);
+    __partition2(arr, l, p-1);
+    __partition2(arr, p+1, r);
+}
+void quickSort(int arr[], int n)
+{
+    //优化2：srand(time(NULL));
+    __quickSort(arr, 0, n-1);
+}
+
